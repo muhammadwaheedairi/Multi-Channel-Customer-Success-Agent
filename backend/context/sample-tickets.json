@@ -1,0 +1,10 @@
+[
+  {"channel": "email", "message": "Hi, I forgot my password and can't login. Please help.", "category": "technical", "expected": "password_reset_guide"},
+  {"channel": "whatsapp", "message": "how do i add my team?", "category": "general", "expected": "invite_members_guide"},
+  {"channel": "web_form", "message": "I need a refund for last month", "category": "billing", "expected": "escalate_billing"},
+  {"channel": "email", "message": "Your product is terrible! I want to speak to a manager NOW!", "category": "escalation", "expected": "escalate_angry"},
+  {"channel": "whatsapp", "message": "human", "category": "escalation", "expected": "escalate_human_request"},
+  {"channel": "web_form", "message": "How much does enterprise cost?", "category": "billing", "expected": "escalate_pricing"},
+  {"channel": "email", "message": "I can't connect Slack integration", "category": "technical", "expected": "slack_integration_guide"},
+  {"channel": "whatsapp", "message": "app is slow today", "category": "technical", "expected": "slow_loading_guide"}
+]
