@@ -121,3 +121,50 @@ async def get_channel_metrics(pool: asyncpg.Pool):
                WHERE started_at > NOW() - INTERVAL '24 hours'
                GROUP BY initial_channel"""
         )
+
+# ─── LATENCY TRACKING ────────────────────────────────
+
+async def update_message_latency(
+    pool: asyncpg.Pool,
+    message_id: str,
+    latency_ms: int
+):
+    async with pool.acquire() as conn:
+        await conn.execute(
+            "UPDATE messages SET latency_ms = $1 WHERE id = $2",
+            latency_ms, message_id
+        )
+
+async def get_avg_latency(pool: asyncpg.Pool, channel: str = None):
+    async with pool.acquire() as conn:
+        if channel:
+            return await conn.fetchval(
+                """SELECT AVG(latency_ms) FROM messages
+                   WHERE direction = 'outbound'
+                   AND channel = $1
+                   AND latency_ms IS NOT NULL""",
+                channel
+            )
+        return await conn.fetchval(
+            """SELECT AVG(latency_ms) FROM messages
+               WHERE direction = 'outbound'
+               AND latency_ms IS NOT NULL"""
+        )
+
+async def record_agent_metric(
+    pool: asyncpg.Pool,
+    metric_name: str,
+    metric_value: float,
+    channel: str = None,
+    dimensions: dict = None
+):
+    async with pool.acquire() as conn:
+        await conn.execute(
+            """INSERT INTO agent_metrics
+               (metric_name, metric_value, channel, dimensions)
+               VALUES ($1, $2, $3, $4)""",
+            metric_name,
+            metric_value,
+            channel,
+            json.dumps(dimensions or {})
+        )

@@ -1,0 +1,46 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: monitoring-config
+  namespace: fte
+data:
+  METRICS_INTERVAL_SECONDS: "60"
+  ALERT_ESCALATION_RATE_THRESHOLD: "0.25"
+  ALERT_LATENCY_P95_MS: "3000"
+  ALERT_UPTIME_MIN_PERCENT: "99.9"
+  HEALTH_CHECK_INTERVAL: "30"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fte-metrics-collector
+  namespace: fte
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fte
+      component: metrics
+  template:
+    metadata:
+      labels:
+        app: fte
+        component: metrics
+    spec:
+      containers:
+      - name: metrics-collector
+        image: fte-api:latest
+        imagePullPolicy: Never
+        command: ["uv", "run", "python", "workers/metrics_collector.py"]
+        envFrom:
+        - configMapRef:
+            name: fte-config
+        - secretRef:
+            name: fte-secrets
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
